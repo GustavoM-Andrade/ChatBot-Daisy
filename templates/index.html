@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<!-- Página de chat da DAISY. Tema escuro futurista (dourado + vermelho neon). -->
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DAISY — sua assistente virtual</title>
+  <style>
+    /* ----------------------------------------------------------------
+       Tema escuro futurista inspirado no visual dourado/vermelho neon.
+       ---------------------------------------------------------------- */
+    :root {
+      --bg: #050404;
+      --gold: #e8b64a;
+      --gold-soft: #c9962f;
+      --red: #e2231a;
+      --text: #efe6d6;
+      --text-dim: #9a8f7d;
+      --bubble-user: rgba(30, 20, 8, 0.75);
+      --bubble-daisy: rgba(18, 14, 10, 0.85);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      /* Fundo preto com um leve brilho dourado/vermelho ao centro. */
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(226, 35, 26, 0.10), transparent 60%),
+        radial-gradient(900px 500px at 50% 110%, rgba(232, 182, 74, 0.10), transparent 60%),
+        var(--bg);
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 820px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 0 20px;
+    }
+
+    /* ---------------- Cabeçalho ---------------- */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 22px 0 18px;
+      position: relative;
+    }
+    /* Linhas neon que saem do logo para as laterais. */
+    header::before,
+    header::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 28%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--red));
+      box-shadow: 0 0 8px rgba(232, 182, 74, 0.6);
+    }
+    header::before { left: 0; }
+    header::after { right: 0; transform: scaleX(-1); }
+
+    .logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      color: var(--gold);
+      border: 1px solid rgba(232, 182, 74, 0.6);
+      box-shadow: 0 0 18px rgba(232, 182, 74, 0.35), inset 0 0 12px rgba(226, 35, 26, 0.25);
+      background: radial-gradient(circle at 50% 40%, rgba(232, 182, 74, 0.15), transparent 70%);
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 6px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--gold), #fff3d6, var(--gold-soft));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .brand p {
+      margin: 2px 0 0;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    /* ---------------- Área de conversa ---------------- */
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #chat::-webkit-scrollbar { width: 8px; }
+    #chat::-webkit-scrollbar-thumb {
+      background: rgba(232, 182, 74, 0.25);
+      border-radius: 8px;
+    }
+
+    .msg {
+      max-width: 72%;
+      padding: 14px 18px;
+      border-radius: 16px;
+      line-height: 1.5;
+      font-size: 15px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      position: relative;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Mensagem do usuário: alinhada à direita, contorno dourado. */
+    .user {
+      align-self: flex-end;
+      background: var(--bubble-user);
+      border: 1px solid rgba(232, 182, 74, 0.45);
+      box-shadow: 0 0 14px rgba(232, 182, 74, 0.15);
+      border-bottom-right-radius: 4px;
+    }
+
+    /* Mensagem da DAISY: alinhada à esquerda, brilho avermelhado. */
+    .daisy {
+      align-self: flex-start;
+      background: var(--bubble-daisy);
+      border: 1px solid rgba(226, 35, 26, 0.40);
+      box-shadow: 0 0 16px rgba(226, 35, 26, 0.12);
+      border-bottom-left-radius: 4px;
+    }
+    /* Ícone da flor ao lado das mensagens da DAISY. */
+    .daisy::before {
+      content: "❋";
+      position: absolute;
+      left: -46px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      border-radius: 50%;
+      border: 1px solid rgba(232, 182, 74, 0.6);
+      box-shadow: 0 0 12px rgba(232, 182, 74, 0.4);
+      background: rgba(10, 8, 6, 0.9);
+      font-size: 16px;
+    }
+    .daisy.pensando {
+      opacity: 0.7;
+      font-style: italic;
+      color: var(--text-dim);
+    }
+
+    /* ---------------- Barra de envio ---------------- */
+    form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0 26px;
+      padding: 8px 8px 8px 20px;
+      border-radius: 40px;
+      background: rgba(12, 9, 6, 0.8);
+      border: 1px solid rgba(232, 182, 74, 0.55);
+      box-shadow: 0 0 22px rgba(232, 35, 26, 0.18), inset 0 0 10px rgba(0, 0, 0, 0.6);
+    }
+    form::before {
+      content: "✦";
+      color: var(--gold);
+      font-size: 18px;
+      opacity: 0.8;
+    }
+    #message {
+      flex: 1;
+      padding: 12px 6px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+    }
+    #message::placeholder { color: var(--text-dim); }
+
+    /* Botão de enviar redondo, vermelho, com ícone de avião. */
+    button {
+      width: 46px;
+      height: 46px;
+      flex: 0 0 46px;
+      border: none;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #ff5a4d, var(--red));
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 16px rgba(226, 35, 26, 0.6);
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+    button:hover { box-shadow: 0 0 22px rgba(226, 35, 26, 0.9); }
+    button:active { transform: scale(0.94); }
+    button:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
+
+    @media (max-width: 640px) {
+      header::before, header::after { width: 14%; }
+      .msg { max-width: 82%; }
+      .daisy::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">❋</div>
+      <div class="brand">
+        <h1>DAISY</h1>
+        <p>sua assistente virtual</p>
+      </div>
+    </header>
+
+    <div id="chat">
+      <div class="msg daisy">Oi! Eu sou a DAISY. 😄 Me conta: o que a gente resolve hoje?</div>
+    </div>
+
+    <form id="form">
+      <input id="message" type="text" placeholder="Digite sua mensagem..." autocomplete="off" />
+      <button type="submit" aria-label="Enviar">➤</button>
+    </form>
+  </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const form = document.getElementById("form");
+    const input = document.getElementById("message");
+    const botao = form.querySelector("button");
+
+    // Adiciona uma mensagem na tela e devolve o elemento criado.
+    function adicionar(texto, classe) {
+      const div = document.createElement("div");
+      div.className = "msg " + classe;
+      div.textContent = texto;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+      return div;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const mensagem = input.value.trim();
+      if (!mensagem) return;
+
+      // Mostra a mensagem do usuário e limpa o campo.
+      adicionar(mensagem, "user");
+      input.value = "";
+      botao.disabled = true;
+
+      // Indicador de "pensando".
+      const pensando = adicionar("DAISY está pensando...", "daisy pensando");
+
+      try {
+        const resp = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: mensagem }),
+        });
+        const dados = await resp.json();
+        pensando.remove();
+
+        if (resp.ok) {
+          adicionar(dados.reply, "daisy");
+        } else {
+          adicionar(dados.error || "Algo deu errado por aqui.", "daisy");
+        }
+      } catch (err) {
+        pensando.remove();
+        adicionar("Não consegui falar com o servidor. Tenta de novo?", "daisy");
+      } finally {
+        botao.disabled = false;
+        input.focus();
+      }
+    });
+  </script>
+</body>
+</html>
